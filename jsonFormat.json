@@ -1,0 +1,16 @@
+{
+    "inventory_ID":"",
+    "MUST_name":"",
+    "type":"",
+    "quantity":"",
+    "photo":"",
+    "photo mimetype":"",
+    "inventory_address":{
+        "street":"",
+        "building":"",
+        "country":"",
+        "zipcode":"",
+        "coord":""
+    },
+    "MUST_manager":""
+}
