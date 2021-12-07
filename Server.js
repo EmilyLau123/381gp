@@ -1,90 +1,104 @@
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
-const http = require('http');
-const url = require('url');
- 
-const mongourl = 'mongodb+srv://emily:<password>@cluster0.qqjdp.mongodb.net/myFirstDatabase?retryWrites=true&w=majority';
-const dbName = 'test';
- 
-const insertDocument = (db, doc, res, callback) => {
-    db.collection('bookings').
-    insertOne(doc, (err, result) => {
-        assert.equal(err,null);
-        console.log("inserted one document " + JSON.stringify(doc));
-        callback(result,res);
+
+
+const app = require('express');
+const session = require('cookie-session');
+const bodyParser = require('body-parser');
+
+//user session setting
+const SECRETKEY = 'Logged in';
+
+
+
+app.use(session({
+  name: 'loginSession',
+  keys: [SECRETKEY]
+}));
+
+// support parsing of application/json type post data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+// view engine setup
+//app.set('views', path.join(__dirname, 'views'));
+//setting view engine to ejs
+app.set("view engine", "ejs");
+
+app.get('/', (req,res) => {
+	console.log(req.session);
+	if (!req.session.authenticated) {    // user not logged in!
+		res.redirect('/login');
+	} else {
+		res.status(200).render('secrets',{name:req.session.username});
+	}
+});
+
+app.get( '/login', (req,res) => {
+      res.status(200).render('login',{});
     });
-}
 
-const findDocument = (db, criteria, callback) => {
-    let cursor = db.collection('bookings').find(criteria);
-    cursor.toArray((err,docs) => {
-        assert.equal(err,null);
-        callback(docs);
+app.post('/login', (req,res) => {
+   console.log(req.body);
+   users.forEach((user) => {
+      if (user.username == req.body.username && user.password == req.body.password) {
+         // correct user name + password
+         // store the following name/value pairs in cookie session
+         req.session.authenticated = true;        // 'authenticated': true
+         req.session.username = req.body.username;	 // 'username': req.body.name		
+         }
+      });
+      res.redirect('/');
+});
+
+app.get('/logout', (req,res) => {
+	req.session = null;   // clear cookie-session
+	res.redirect('/');
+});
+
+app.get( '/home', (req,res) => {
+    console.log('home',req.query);
+
+    res.render('home',{username:req.query})
     });
-}
 
-const deleteDocument = (db, criteria, callback) => {
-    db.collection('bookings').deleteMany(criteria, (err,results) => {
-        assert.equal(err,null);
-        console.log('deleteMany was successful');
-        callback(results);
-    })
-}
+app.get( 'find', (req,res) => {
+   res.set('Content-Type','text/html');  // send HTTP response header
+   res.status(200).end(login());
+   });
 
-const handle_Find = (res, criteria) => {
-    const client = new MongoClient(mongourl);
-    client.connect((err) => {
-        assert.equal(null, err);
-        console.log("Connected successfully to server");
-        const db = client.db(dbName);
+app.post( '/create', (req,res) => {
+   res.set('Content-Type','text/html');  // send HTTP response header
+   res.status(200).end(login());
+   });
 
-        findDocument(db, criteria, (docs) => {
-            client.close();
-            console.log("Closed DB connection");
-            res.writeHead(200, {"content-type":"text/html"});
-            res.write('<html><body><ul>');
-            for (var doc of docs) {
-                //console.log(doc);
-                res.write(`<li>Booking ID: ${doc.bookingid}, Mobile: ${doc.mobile}`);
-            }
-            res.end('</ul></body></html>');
-        });
-    });
-}
+app.put( '/update', (req,res) => {
+   res.set('Content-Type','text/html');  // send HTTP response header
+   res.status(200).end(login());
+   });
 
-const handle_Delete = (res, criteria) => {
-    const client = new MongoClient(mongourl);
-    client.connect((err) => {
-        assert.equal(null, err);
-        console.log("Connected successfully to server");
-        const db = client.db(dbName);
-    
-        deleteDocument(db, criteria, (results) => {
-            client.close();
-            console.log("Closed DB connection");
-            console.log(results);
-            res.writeHead(200, {"content-type":"text/html"});
-            res.write('<html><body>');
-            res.write(`Deleted documents having criteria ${JSON.stringify(criteria)}: ${results.deletedCount}`);
-            res.end('</body></html>');
-        });
-    });
-}
+app.delete( '/remove', (req,res) => {
+   res.set('Content-Type','text/html');  // send HTTP response header
+   res.status(200).end(login());
+   });
 
-const server = http.createServer((req,res) => {
-    var parsedURL = url.parse(req.url, true);
- 
-    switch(parsedURL.pathname) {
-        case '/find':
-            handle_Find(res, parsedURL.query);
-            break;
-        case '/delete':
-            handle_Delete(res, parsedURL.query);
-            break;
-        default:
-            res.writeHead(404, {'Content-Type': 'text/plain'});
-            res.end(`${parsedURL.pathname} - Unknown request!`);
-    }
-})
- 
-server.listen(process.env.PORT || 8099);
+app.get( '/error', (req,res) => {
+   res.set('Content-Type','text/html');  // send HTTP response header
+   res.status(200).end(login());
+   });
+//     case '/find':
+//         handle_Find(res, parsedURL.query);
+//         break;
+       
+
+//   default:
+//      res.writeHead(404, {"Content-Type": "text/plain"});
+//      res.end("404 Not Found\n");
+app.get('/*', (req, res) => {  // default route for anything else
+   res.set('Content-Type', 'text/plain');
+   res.status(404).end("404 Not Found");
+ })
+
+// const server = app.listen(process.env.PORT || 8099, () => {
+// const port = server.address().port;
+// console.log(`Server listening at port ${port}`);
+// });
+
+module.exports = app;

@@ -3,6 +3,8 @@ const url = require('url');
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const express = require('express');
+const session = require('cookie-session');
+const bodyParser = require('body-parser');
 const app = express();
 const formidable = require('express-formidable');
 
@@ -16,7 +18,19 @@ var indexRouter = require('./router');
 //var usersRouter = require('./routes/users');
 //app.use(formidable());
 
+//user session setting
+const SECRETKEY = 'Logged in';
 
+
+
+app.use(session({
+  name: 'loginSession',
+  keys: [SECRETKEY]
+}));
+
+// support parsing of application/json type post data
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 // view engine setup
 //app.set('views', path.join(__dirname, 'views'));
 //setting view engine to ejs
@@ -43,13 +57,6 @@ app.use(function(req, res, next) {
   });
 
 
-
-
-
-const home = () => {
-    let html = '';
-    html += 'inpu';
-}
 
 const findDocument = (db, criteria, callback) => {
     let cursor = db.collection('bookings').find(criteria);

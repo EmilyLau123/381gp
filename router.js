@@ -1,23 +1,40 @@
 
 
 const express = require('express');
+const session = require('cookie-session');
+const bodyParser = require('body-parser');
 var router = express.Router();
 
-
+router.get('/', (req,res) => {
+	console.log(req.session);
+	if (!req.session.authenticated) {    // user not logged in!
+		res.redirect('/login');
+	} else {
+		res.status(200).render('secrets',{name:req.session.username});
+	}
+});
 
 router.get( '/login', (req,res) => {
-    console.log('login',req.url);
-    res.render('login')
+      res.status(200).render('login',{});
     });
 
-router.get( '/checkLogin', (req,res) => {
-    //res.send(JSON.stringify(req));
+router.post('/login', (req,res) => {
+   console.log(req.body);
+   users.forEach((user) => {
+      if (user.username == req.body.username && user.password == req.body.password) {
+         // correct user name + password
+         // store the following name/value pairs in cookie session
+         req.session.authenticated = true;        // 'authenticated': true
+         req.session.username = req.body.username;	 // 'username': req.body.name		
+         }
+      });
+      res.redirect('/');
+});
 
-    //console.log('login',req);
-    var username = 'John';
-    res.status(200).send('Got a POST request'+req.params.username);
-    //res.redirect('/home')
-    });
+router.get('/logout', (req,res) => {
+	req.session = null;   // clear cookie-session
+	res.redirect('/');
+});
 
 router.get( '/home', (req,res) => {
     console.log('home',req.query);
