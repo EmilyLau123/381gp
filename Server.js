@@ -1,8 +1,16 @@
 
 
-const app = require('express');
+const express = require('express');
 const session = require('cookie-session');
+const MongoClient = require("mongodb").MongoClient;
 const bodyParser = require('body-parser');
+const assert = require('assert');
+const formidable = require('express-formidable');
+
+const mongourl = 'mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
+const dbName = 'test';
+
+const app = express();
 
 //user session setting
 const SECRETKEY = 'Logged in';
@@ -14,7 +22,13 @@ app.use(session({
   keys: [SECRETKEY]
 }));
 
+const users = new Array(
+	{username: 'student', password: ''},
+	{username: 'demo', password: ''}
+);
+
 // support parsing of application/json type post data
+app.use(formidable());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 // view engine setup
@@ -22,12 +36,24 @@ app.use(bodyParser.urlencoded({ extended: true }));
 //setting view engine to ejs
 app.set("view engine", "ejs");
 
+const findDocument = (db, criteria, callback) => {
+    let cursor = db.collection('inventories').find(criteria);
+    console.log(`findDocument: ${JSON.stringify(criteria)}`);
+    cursor.toArray((err,docs) => {
+        assert.equal(err,null);
+        console.log(`findDocument: ${docs.length}`);
+        console.log(`Document: ${JSON.stringify(docs)}`);
+        callback(docs);
+    });
+}
+//route
 app.get('/', (req,res) => {
-	console.log(req.session);
+	//console.log(req.session);
 	if (!req.session.authenticated) {    // user not logged in!
 		res.redirect('/login');
 	} else {
-		res.status(200).render('secrets',{name:req.session.username});
+        res.redirect('/home');
+		//res.status(200).render('home');
 	}
 });
 
@@ -53,10 +79,36 @@ app.get('/logout', (req,res) => {
 	res.redirect('/');
 });
 
-app.get( '/home', (req,res) => {
-    console.log('home',req.query);
+app.get( '/home', (req,res,callback) => {
+    const client = new MongoClient(mongourl);
+    client.connect((err) => {
+        assert.equal(null, err);
+        console.log("Connected successfully to server");
+        const db = client.db(dbName);
+        const criteria = '';
 
-    res.render('home',{username:req.query})
+        findDocument(db, criteria, (docs) => {
+            client.close();
+            console.log("Closed DB connection");
+            //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
+            let result = `${JSON.stringify(docs)}`
+            res.render('home',{username:req.session.username,
+                name:'dasds',
+                type:"sad",
+                quantity:"234",
+                manager:"demo"
+                })
+            /*
+            res.writeHead(200, {"content-type":"text/html"});
+            res.write(`<html><body><H2>inventories (${docs.length})</H2><ul>`);
+            for (var doc of docs) {
+                //console.log(doc);
+                res.write(`<li>Booking ID: <a href="/details?_id=${doc._id}">${doc.bookingid}</a></li>`);
+            }
+            res.end('</ul></body></html>');
+            */
+            });
+        });
     });
 
 app.get( 'find', (req,res) => {
@@ -96,9 +148,9 @@ app.get('/*', (req, res) => {  // default route for anything else
    res.status(404).end("404 Not Found");
  })
 
-// const server = app.listen(process.env.PORT || 8099, () => {
-// const port = server.address().port;
-// console.log(`Server listening at port ${port}`);
-// });
+const server = app.listen(process.env.PORT || 8099, () => {
+const port = server.address().port;
+console.log(`Server listening at port ${port}`);
+});
 
 module.exports = app;

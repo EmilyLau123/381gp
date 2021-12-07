@@ -14,14 +14,9 @@
                 <h3>Welcome!</h3>
             </div>
             <div>
-            <form action="/login" method="post">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" class="form-control" id="username">
-                  </div>
-                  <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" class="form-control" id="password">
+                <form action="/login" method="post" class="form-group">
+                    Username: <input type="text" name="username" class="form-control"><br>
+                    Password: <input type="password" name="password" class="form-control"><br>
                   </div>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
