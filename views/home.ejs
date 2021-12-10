@@ -9,36 +9,41 @@
             <link href="../public/stylesheets/home.css" rel="stylesheet" type="text/css">
             <meta charset="utf-8">  
             
+        
+
         </head>  
         <body>  
+
+
             <div style="padding-left: 5px;background-color:cadetblue" >
                 <form action='/logout' style="float: right;">
                     <input type="submit" class="btn btn-primary" value="Logout"/>
                 </form>
                 <!-- <button onclick=type="button" class="btn btn-primary" style="float: right;">Log out</button> -->
-                <h1>Welcome!<%= username %></h1>
+                <h1>Welcome!<%= name %></h1>
                 <h3>s12303769 Emily Lau</h3>
                 <h3>Kit</h3>
             </div>
-                <div class="input-group" style="text-align: center;">
+                <div class="input-group" style="width:100%">
                     <div class="form-outline"  style="margin-left: auto">
-                        <input type="search" id="form1" class="form-control" style="margin-left: auto" />
+                        <input type="search" id="search" class="form-control" style="margin-left: auto" />
                     </div>
                 <button type="button" class="btn btn-primary" style="margin-right: auto;">
                     <i class="fas fa-search"></i>
                 </button>
-
         </div>
-         Inventories:<br>
+         <h4>Inventories:</h4><br>
+         <% data.forEach(function(doc){ %>
             <div class="card">
-                <!-- <img src="img_avatar.png" alt="Avatar" style="width:100%"> -->
                 <div class="container">
-                    <a href="#"><%= name %></a>
-                    type: <%= type %>
-                    quantity: <%= quantity %>
-                    manager: <%= manager %>
+                    <a href="#"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
+                    Manager: <%- JSON.stringify(doc.manager) %>
                 </div>
-              </div>
+              </div>  
+            <% }); %>
+
             
+            
+           
     </body>  
 </html>  
