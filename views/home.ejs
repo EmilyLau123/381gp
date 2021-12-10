@@ -36,7 +36,7 @@
          <% data.forEach(function(doc){ %>
             <div class="card">
                 <div class="container">
-                    <a href="#"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
+                    <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
                     Manager: <%- JSON.stringify(doc.manager) %>
                 </div>
               </div>  

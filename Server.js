@@ -124,9 +124,8 @@ app.get( '/home', (req,res,callback) => {
             */
          
 
-app.get( '/find', (req,res) => {
-   res.set('Content-Type','text/html');  // send HTTP response header
-   res.status(200).end(login());
+app.get( '/api/inventory/name/:name', (req,res) => {
+    res.send("inventory name is set to " + req.params.name);
    });
 
 app.post( '/create', (req,res) => {
