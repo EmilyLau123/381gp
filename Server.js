@@ -5,7 +5,9 @@ const session = require('cookie-session');
 const MongoClient = require("mongodb").MongoClient;
 const bodyParser = require('body-parser');
 const assert = require('assert');
-const formidable = require('express-formidable');
+const formidable = require('formidable');
+var ObjectID = require('mongodb').ObjectID;
+
 
 // const router = express.Router();
 
@@ -55,6 +57,26 @@ const findDocument = (db, criteria, callback) => {
         callback(docs);
     });
 }
+
+const createDocument = (db, fields) => {
+    db.collection('inventories').insertOne(
+        {
+            name: fields.name,
+            type: fields.type,
+            quantity: fields.quantity,
+            inventory_address: {
+                street:fields.street,
+                building:fields.building,
+                country:fields.country,
+                zipcode:fields.zipcode,
+                coord:fields.lanitude+fields.longitude
+            },
+            manager: fields.manager
+           
+        }
+    );
+}
+
 //route
 app.get('/', (req,res) => {
 	//console.log(req.session);
@@ -119,7 +141,7 @@ app.get( '/home', (req,res,callback) => {
                 // });
                 // console.log(html);
                 res.render('home',{name:req.session.username,
-                    data:docs,
+                    data:docs
                     })
                 })
             });
@@ -146,17 +168,37 @@ app.get( '/home', (req,res,callback) => {
          
 
 app.get( '/api/inventory/name/:name', (req,res) => {
-    res.send("inventory name is set to " + req.params.name);
+    res.status(200).render('detail',{
+        name:req.params.name
+    })
    });
 
-app.get( '/api/inventory/create', (req,res) => {
-    res.render('create',{})
+app.get( '/create', (req,res) => {
+    res.status(200).render('create',{
+        user:req.session.username
+    })
 });
 
-app.post( '/create', (req,res) => {
-   res.set('Content-Type','text/html');  // send HTTP response header
-   res.status(200).end(login());
-   });
+app.post( '/api/inventory/create', (req,res) => {
+    const form = formidable({ multiples: true });
+    form.parse(req, (err, fields, files) => {
+        if (err) {
+          next(err);
+          return;
+        }
+        const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null, err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            createDocument(db,fields);
+            console.log(fields);
+            res.status(200).render('success',{
+                action:"Create"
+            })
+      });
+    });
+});
 
 app.put( '/update', (req,res) => {
    res.set('Content-Type','text/html');  // send HTTP response header
@@ -192,4 +234,3 @@ app.listen(process.env.PORT || 8099);
 // });
 
 module.exports = app;
-// export default router;
