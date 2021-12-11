@@ -39,7 +39,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
 const findDocument = (db, criteria, callback) => {
-    let cursor = db.collection('inventories').find(criteria);
+    if(criteria == ''){
+        var cursor = db.collection('inventories').find();
+    }else{
+        criteria = JSON.stringify(criteria).replaceAll('"','');
+        var cursor = db.collection('inventories').find({name:criteria});
+    }
+    console.log(criteria);
+    
     console.log(`findDocument: ${JSON.stringify(criteria)}`);
     cursor.toArray((err,docs) => {
         assert.equal(err,null);
@@ -103,8 +110,17 @@ app.get( '/home', (req,res,callback) => {
                 //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
                 let result = `${JSON.stringify(docs)}`
                 console.log(`${JSON.stringify(docs[0])}`);
+                let html = '';
+                docs.forEach((doc) => {
+                    html += '<div class="card">';
+                    html += '<div class="container">';
+                    html += '<a href="/api/inventory/name/'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
+                    html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
+                      
+                });
+                console.log(html);
                 res.render('home',{name:req.session.username,
-                    data:docs
+                    data:html
                     })
                 })
             });
@@ -112,6 +128,43 @@ app.get( '/home', (req,res,callback) => {
     //     res.redirect('/login');
     // }
 });
+//ejs
+// <!-- <% data.forEach(function(doc){ %>
+//     <div class="card">
+//         <div class="container">
+//             <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
+//             Manager: <%- JSON.stringify(doc.manager) %>
+//         </div>
+//       </div>  
+//     <% }); %> -->
+app.post('/home',(req, res,callback) => {
+    const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null, err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            const criteria = req.body.search;//from input search bar
+            console.log('search: '+req.body.search);
+            findDocument(db, criteria, (docs) => {
+                client.close();
+                console.log("Closed DB connection");
+                //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
+                let result = `${JSON.stringify(docs)}`
+                console.log('result: '+result);
+                let html = '';
+                docs.forEach((doc) => {
+                    html += '<div class="card">';
+                    html += '<div class="container">';
+                    html += '<a href="/api/inventory/name/"'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
+                    html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
+                      
+                });
+                res.render('home',{name:req.session.username,
+                    data:html
+                    })
+                })
+            });
+})
     
             /*
             res.writeHead(200, {"content-type":"text/html"});
@@ -127,6 +180,10 @@ app.get( '/home', (req,res,callback) => {
 app.get( '/api/inventory/name/:name', (req,res) => {
     res.send("inventory name is set to " + req.params.name);
    });
+
+app.get( '/api/inventory/create', (req,res) => {
+    res.render('create',{})
+});
 
 app.post( '/create', (req,res) => {
    res.set('Content-Type','text/html');  // send HTTP response header

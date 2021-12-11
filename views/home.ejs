@@ -24,23 +24,21 @@
                 <h3>s12303769 Emily Lau</h3>
                 <h3>Kit</h3>
             </div>
-                <div class="input-group" style="width:100%">
-                    <div class="form-outline"  style="margin-left: auto">
-                        <input type="search" id="search" class="form-control" style="margin-left: auto" />
+                <div class="input-group" >
+                    <div class="form-outline"  style="float: left;">
+                        <form action='/home' method="post"  style="float: left;" >
+                        <input type="search" name="search" id="search" class="form-control"  style="float: left;"/>
+                        <button type="submit" class="btn btn-primary" style="float: right;">Search</button>
+                        </form>
                     </div>
-                <button type="button" class="btn btn-primary" style="margin-right: auto;">
-                    <i class="fas fa-search"></i>
-                </button>
+                
         </div>
-         <h4>Inventories:</h4><br>
-         <% data.forEach(function(doc){ %>
-            <div class="card">
-                <div class="container">
-                    <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
-                    Manager: <%- JSON.stringify(doc.manager) %>
-                </div>
-              </div>  
-            <% }); %>
+         
+         <form action='api/inventory/create'><h4>Inventories:</h4>
+            <input type="submit" class="btn btn-primary" value="Create inventory"/>
+        </form>
+         <%- data %>
+         
 
             
             
