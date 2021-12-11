@@ -9,7 +9,33 @@
             <link href="../public/stylesheets/home.css" rel="stylesheet" type="text/css">
             <meta charset="utf-8">  
             
-        
+            <script>
+                function searchFunction(){
+                    var search = document.getElementById("search");
+                    console.log(search.value);
+                    var items = document.getElementsByTagName("a");
+                    var table = document.getElementById("table");
+                    var toBeAppend ="";
+                    if(search.value != ''){
+                        for(let i=0; i<items.length;i++){
+                            var itemText = items[i].innerHTML.toUpperCase();
+                            var searchText = search.value.toUpperCase();
+                            if (itemText.includes(searchText)){
+                                toBeAppend = items[i].parentElement;
+                                toBeAppend.style.display = "block";
+                            }else{
+                                items[i].parentElement.style.display = "none";
+                            }
+                        
+                            }
+                    }else{
+                        for(let i=0; i<items.length;i++){
+                                toBeAppend = items[i].parentElement;
+                                toBeAppend.style.display = "block";
+                            }
+                    }
+                }
+            </script>
 
         </head>  
         <body>  
@@ -24,24 +50,29 @@
                 <h3>s12303769 Emily Lau</h3>
                 <h3>Kit</h3>
             </div>
-                <div class="input-group" >
+            <p>Search inventory name:
+                <label for="bar"><span class="glyphicon glyphicon-search"></span></label><input style="width:100%" type="text" id="search" onkeyup="searchFunction()" placeholder="Search name" name="search"/><br></p>
+                
+                <!-- <div class="input-group" >
                     <div class="form-outline"  style="float: left;">
                         <form action='/home' method="post"  style="float: left;" >
                         <input type="search" name="search" id="search" class="form-control"  style="float: left;"/>
                         <button type="submit" class="btn btn-primary" style="float: right;">Search</button>
                         </form>
                     </div>
-                
+                 -->
         </div>
          
-         <form action='api/inventory/create'><h4>Inventories:</h4>
+         <form action='api/inventory/create'>
             <input type="submit" class="btn btn-primary" value="Create inventory"/>
         </form>
-         <%- data %>
-         
-
-            
-            
-           
+        <div id="table">
+            <h4>Inventories</h4>
+             <% data.forEach(function(doc){ %>
+                         <div class="card">
+                             <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a>
+                             </div> 
+                     <% }); %> 
+         </div>
     </body>  
 </html>  

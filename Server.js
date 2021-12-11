@@ -71,7 +71,6 @@ app.get('/login', (req,res) => {
 	res.status(200).render('login',{});
 });
 
-
 app.post('/login', (req,res) => {
     //console.log('body'+req.params.name);
     console.log(req.body.name);
@@ -110,23 +109,20 @@ app.get( '/home', (req,res,callback) => {
                 //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
                 let result = `${JSON.stringify(docs)}`
                 console.log(`${JSON.stringify(docs[0])}`);
-                let html = '';
-                docs.forEach((doc) => {
-                    html += '<div class="card">';
-                    html += '<div class="container">';
-                    html += '<a href="/api/inventory/name/'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
-                    html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
+                // let html = '';
+                // docs.forEach((doc) => {
+                //     html += '<div class="card">';
+                //     html += '<div class="container">';
+                //     html += '<a href="/api/inventory/name/'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
+                //     html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
                       
-                });
-                console.log(html);
+                // });
+                // console.log(html);
                 res.render('home',{name:req.session.username,
-                    data:html
+                    data:docs,
                     })
                 })
             });
-    // }else{
-    //     res.redirect('/login');
-    // }
 });
 //ejs
 // <!-- <% data.forEach(function(doc){ %>
@@ -137,35 +133,7 @@ app.get( '/home', (req,res,callback) => {
 //         </div>
 //       </div>  
 //     <% }); %> -->
-app.post('/home',(req, res,callback) => {
-    const client = new MongoClient(mongourl);
-        client.connect((err) => {
-            assert.equal(null, err);
-            console.log("Connected successfully to server");
-            const db = client.db(dbName);
-            const criteria = req.body.search;//from input search bar
-            console.log('search: '+req.body.search);
-            findDocument(db, criteria, (docs) => {
-                client.close();
-                console.log("Closed DB connection");
-                //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
-                let result = `${JSON.stringify(docs)}`
-                console.log('result: '+result);
-                let html = '';
-                docs.forEach((doc) => {
-                    html += '<div class="card">';
-                    html += '<div class="container">';
-                    html += '<a href="/api/inventory/name/"'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
-                    html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
-                      
-                });
-                res.render('home',{name:req.session.username,
-                    data:html
-                    })
-                })
-            });
-})
-    
+
             /*
             res.writeHead(200, {"content-type":"text/html"});
             res.write(`<html><body><H2>inventories (${docs.length})</H2><ul>`);
