@@ -12,9 +12,6 @@ var ObjectID = require('mongodb').ObjectID;
 // const router = express.Router();
 
 
-const mongourl = 'mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
-const dbName = 'test';
-
 const app = express();
 
 //user session setting
