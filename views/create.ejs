@@ -32,7 +32,7 @@
                  <form action="/api/inventory/create" method="post" enctype="multipart/form-data">
                     Name: <input type="text" name="name" class="form-control"><br>
                     Type: <input type="text" name="type" class="form-control"><br>
-                    Quantity: <input type="text" name="number" class="form-control"><br>
+                    Quantity: <input type="text" name="quantity" class="form-control"><br>
                     Photo: <input type="file" name="photo" class="form-control"><br>
                     Street: <input type="text" name="street" class="form-control"><br>
                     Building: <input type="text" name="building" class="form-control"><br>
@@ -40,7 +40,7 @@
                     Zipcode: <input type="text" name="zipcode" class="form-control"><br>
                     Lanitude: <input type="text" name="lanitude" class="form-control"><br>
                     Longitude: <input type="text" name="longitude" class="form-control"><br>
-                    <input type="hidden" name="user" value="<%= user %>"><br>
+                    <input type="hidden" name="manager" value="<%= user %>"><br>
                     
                 <button type="submit" class="btn btn-primary">Create</button> 
             </form>

@@ -203,9 +203,13 @@ app.get( '/api/inventory/id/:id', (req,res) => {
                     id:req.params.id,
                      name:docs[0].name,
                      type:docs[0].type,
+                     street:docs[0].street,
+                     building:docs[0].building,
+                     zipcode:docs[0].zipcode,
+                     country:docs[0].country,
+                     manager:docs[0].manager,
                      image:"data:image/jpg;base64, "+docs[0].photo,
                      quantity:docs[0].quantity,
-                     manager:docs[0].manager,
                      lat:docs[0].lanitude,
                      lon:docs[0].longitude,
                      zoom:15
@@ -297,7 +301,7 @@ app.get( '/update/id/:id', (req,res) => {
                 zipcode:docs[0].zipcode,
                 lanitude:docs[0].lanitude,
                 longitude:docs[0].longitude,
-                user:req.session.username
+                manager:req.session.username
                 });
             });
         });
@@ -359,35 +363,47 @@ app.put( '/api/inventory/id/:id', (req,res) => {
     }
    });
 
-app.delete( '/api/inventory/id/:id', (req,res) => {
-    if (req.params.id) {
-        let criteria = {};
-        criteria['_id'] = ObjectID(req.params.id);
-        const client = new MongoClient(mongourl);
-        client.connect((err) => {
-            assert.equal(null, err);
-            console.log("Connected successfully to server");
-            const db = client.db(dbName);
-            console.log(criteria);
-            // deleteDocument(db,req.params.id);
-            db.collection('inventories').deleteOne(criteria,(err,results) => {
-                assert.equal(err,null)
-            client.close()
-            console.log("deleted");
-            res.status(200).render('success',{
-                action:"Delete"
+app.delete( '/api/inventory/id/:id/manager/:manager', (req,res) => {
+    if(manager == req.session.username){
+        if (req.params.id) {
+            let criteria = {};
+            criteria['_id'] = ObjectID(req.params.id);
+            const client = new MongoClient(mongourl);
+            client.connect((err) => {
+                assert.equal(null, err);
+                console.log("Connected successfully to server");
+                const db = client.db(dbName);
+                console.log(criteria);
+                // deleteDocument(db,req.params.id);
+                db.collection('inventories').deleteOne(criteria,(err,results) => {
+                    assert.equal(err,null)
+                client.close()
+                console.log("deleted");
+                res.status(200).render('success',{
+                    action:"Delete"
+                });
             });
-        });
-        });
-    } else {
-        res.status(500).json({"error": "missing inventory id"});       
-    }
+            });
+        } else {
+            res.status(500).render('error',{
+                action:"Delete",
+                error: "missing id"
+            });        
+        }
     
-   });
+   }else{
+    res.status(500).render('error',{
+        action:"Delete",
+        error: "Only the manager ("+req.session.username+") can delete this inventory"
+    });  
+}
+});
 
 app.get( '/error', (req,res) => {
-   res.set('Content-Type','text/html');  // send HTTP response header
-   res.status(200).end(login());
+    res.status(500).render('error',{
+        action:"",
+        error: "error occurs"
+    }); 
    });
 //     case '/find':
 //         handle_Find(res, parsedURL.query);

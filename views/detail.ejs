@@ -19,14 +19,46 @@
         </head>  
         <body>  
             <div>
-                <h4>Inventory: <%= name %></h4>
-                <div id="image" >
-                    <img height="400px" style="object-fit: contain;"src="<%= image %>"/>
+                <div style="background-color: cadetblue;">
+                <h4  style="padding-top: 5px;padding-bottom:5px ;">Details of inventory: <%= name %> </h4>
                 </div>
+                <div class="container">
+                    <div class="row">
+                      <div class="col" >
+                        <form method="POST" action="/api/inventory/id/<%= id %>?_method=DELETE">
+                            <input type="submit" class="btn btn-danger" value="Delete"/>
+                        </form>
+                      </div>
+                      <div class="col">
+                        <form action="/update/id/<%= id %>">
+                            <input type="submit" class="btn btn-warning" value="Edit"/>
+                        </form>
+                      </div>
+                      <div class="col">
+                        <a href="/home" class="btn btn-primary">Back</a>
+                      </div>
+                    </div>
+                  </div>
+
+                <div id="image" >
+                    <img width="100%" style="object-fit: contain;"src="<%= image %>"/>
+                </div>
+                <hr>
+                <div>
+                
                 Type: <%= type %><br>
                 Quantity: <%= quantity %><br>
+                Street: <%= street %><br>
+                Building: <%= building %><br>
+                Country: <%= country %><br>
+                Zipcode: <%= zipcode %><br>
                 Manager: <%= manager %><br>
-                <div id = "map" style = "width: 700px; height: 380px"></div>
+                </div>
+                <hr>
+                Location: [ <%= lat %> , <%= lon %> ] (map shown below) <br>
+                
+                
+                <div id = "map" style = "width: 800px; height: 380px"></div>
                     <script>
                         // Creating map options
                         var mapOptions = {
@@ -46,23 +78,7 @@
                         marker.addTo(map);
                     </script>
                 
-                <div class="container">
-                    <div class="row">
-                      <div class="col">
-                        <form method="POST" action="/api/inventory/id/<%= id %>?_method=DELETE">
-                            <input type="submit" class="btn btn-danger" value="Delete"/>
-                        </form>
-                      </div>
-                      <div class="col">
-                        <form action="/update/id/<%= id %>">
-                            <input type="submit" class="btn btn-warning" value="Edit"/>
-                        </form>
-                      </div>
-                      <div class="col">
-                        <a href="/home" class="btn btn-primary">Back</a>
-                      </div>
-                    </div>
-                  </div>
+                
         </div>
     </body>  
 </html>  
