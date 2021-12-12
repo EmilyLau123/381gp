@@ -8,6 +8,17 @@ const assert = require('assert');
 const formidable = require('formidable');
 var ObjectID = require('mongodb').ObjectId;
 const fs = require('fs');
+//leaflet setting
+global.window = { screen: {} }
+global.document = {
+  documentElement: { style: {} },
+  getElementsByTagName: () => { return [] },
+  createElement: () => { return {} }
+}
+global.navigator = { userAgent: 'nodejs', platform: 'nodejs' }
+
+const L = require('leaflet')
+
 
 
 // const router = express.Router();
@@ -194,7 +205,10 @@ app.get( '/api/inventory/id/:id', (req,res) => {
                      type:docs[0].type,
                      image:"data:image/jpg;base64, "+docs[0].photo,
                      quantity:docs[0].quantity,
-                     manager:docs[0].manager
+                     manager:docs[0].manager,
+                     lat:docs[0].lanitude,
+                     lon:docs[0].longitude,
+                     zoom:15
                      
                     });
                 });
