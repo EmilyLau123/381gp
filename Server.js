@@ -23,8 +23,6 @@ const L = require('leaflet')
 
 // const router = express.Router();
 
-const mongourl='mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
-dbName = "test";
 
 const app = express();
 
