@@ -25,7 +25,8 @@
                 <div class="container">
                     <div class="row">
                       <div class="col" >
-                        <form method="POST" action="/api/inventory/id/<%= id %>?_method=DELETE">
+                        <!-- <form method="delete" action="/api/inventory/id/<%= id %>/manager/<%= manager %>?_method=DELETE"> -->
+                            <form method="POST" action="/api/inventory/delete/id/<%= id %>/manager/<%= manager %>">
                             <input type="submit" class="btn btn-danger" value="Delete"/>
                         </form>
                       </div>
@@ -41,7 +42,7 @@
                   </div>
 
                 <div id="image" >
-                    <img width="100%" style="object-fit: contain;"src="<%= image %>"/>
+                    <img style="object-fit: contain;"src="<%= image %>"/>
                 </div>
                 <hr>
                 <div>

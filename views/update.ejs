@@ -8,14 +8,14 @@
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"></script>
             <meta charset="utf-8">  
         </head>  
-        <body>  
+        <body>
+            <div style="background-color: cadetblue;">
+                <h4  style="padding-top: 5px;padding-bottom:5px ;">Update inventory: <%= name %></h4>
+            </div>  
             <div>
-                <h3>Update an inventory!</h3>
-            </div>
-            <div>
-                <form method="POST" action="/api/inventory/id/<%= id %>?_method=PUT" enctype="multipart/form-data">
+                <form method="POST" action="/api/inventory/update/id/<%= id %>/manage/<%=manager%>" enctype="multipart/form-data">
                  <!-- <form action="/api/inventory/id/:id" method="post" enctype="multipart/form-data"> -->
-                    Name: <input type="text" name="name" class="form-control" value="<%= name %>"><br>
+                    Name: <input type="text" name="name" class="form-control" value="<%= name %>" required><br>
                     Type: <input type="text" name="type" class="form-control" value="<%= type %>"><br>
                     Quantity: <input type="text" name="quantity" class="form-control" value="<%= quantity %>"><br>
                     Photo: <input type="file" name="photo" class="form-control" value="<%= photo %>"><br>
@@ -25,7 +25,7 @@
                     Zipcode: <input type="text" name="zipcode" class="form-control" value="<%= zipcode %>"><br>
                     Lanitude: <input type="text" name="lanitude" class="form-control" value="<%= lanitude %>"><br>
                     Longitude: <input type="text" name="longitude" class="form-control" value="<%= longitude %>"><br>
-                    <input type="hidden" name="user" value="<%= user %>"><br>
+                    <input type="hidden" name="manager" value="<%= manager %>"><br>
                     
                 <button type="submit" class="btn btn-primary">Update</button> 
             </form>

@@ -23,6 +23,8 @@ const L = require('leaflet')
 
 // const router = express.Router();
 
+const mongourl='mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
+dbName = "test";
 
 const app = express();
 
@@ -72,24 +74,6 @@ const findDocument = (db, criteria, callback) => {
     });
 }
 
-const createDocument = (db, fields) => {
-    db.collection('inventories').insertOne(
-        {
-            name: fields.name,
-            type: fields.type,
-            quantity: fields.quantity,
-            inventory_address: {
-                street:fields.street,
-                building:fields.building,
-                country:fields.country,
-                zipcode:fields.zipcode,
-                coord:fields.lanitude+fields.longitude
-            },
-            manager: fields.user
-           
-        }
-    );
-}
 
 //route
 app.get('/', (req,res) => {
@@ -144,42 +128,12 @@ app.get( '/home', (req,res,callback) => {
                 console.log("Closed DB connection");
                 //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
                 let result = `${JSON.stringify(docs)}`
-                //console.log(`${JSON.stringify(docs[0])}`);
-                // let html = '';
-                // docs.forEach((doc) => {
-                //     html += '<div class="card">';
-                //     html += '<div class="container">';
-                //     html += '<a href="/api/inventory/name/'+doc.name+'>'+JSON.stringify(doc.name).replaceAll('"','')+'</a><br>';
-                //     html += 'Manager:'+JSON.stringify(doc.manager).replaceAll('"','') + '</div>';
-                      
-                // });
-                // console.log(html);
                 res.render('home',{name:req.session.username,
                     data:docs
                     })
                 })
             });
 });
-//ejs
-// <!-- <% data.forEach(function(doc){ %>
-//     <div class="card">
-//         <div class="container">
-//             <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a><br>
-//             Manager: <%- JSON.stringify(doc.manager) %>
-//         </div>
-//       </div>  
-//     <% }); %> -->
-
-            /*
-            res.writeHead(200, {"content-type":"text/html"});
-            res.write(`<html><body><H2>inventories (${docs.length})</H2><ul>`);
-            for (var doc of docs) {
-                //console.log(doc);
-                res.write(`<li>Booking ID: <a href="/details?_id=${doc._id}">${doc.bookingid}</a></li>`);
-            }
-            res.end('</ul></body></html>');
-            */
-         
 
 app.get( '/api/inventory/id/:id', (req,res) => {
     const client = new MongoClient(mongourl);
@@ -220,7 +174,7 @@ app.get( '/api/inventory/id/:id', (req,res) => {
 
 app.get( '/create', (req,res) => {
     res.status(200).render('create',{
-        user:req.session.username
+        manager:req.session.username
     })
 });
 
@@ -299,22 +253,24 @@ app.get( '/update/id/:id', (req,res) => {
                 zipcode:docs[0].zipcode,
                 lanitude:docs[0].lanitude,
                 longitude:docs[0].longitude,
-                manager:req.session.username
+                manager:docs[0].manager
                 });
             });
         });
     
 });
-
-app.put( '/api/inventory/id/:id', (req,res) => {
-    if (req.params.id ) {
+//UPDATE
+app.post( '/api/inventory/update/id/:id/manage/:manager', (req,res) => {
+    console.log('params: '+req.params.manager+'session: '+req.session.username);
+    if(req.params.manager == req.session.username){
+    if (req.params.id) {
         const form = formidable({ multiples: true });
         form.parse(req, (err, fields, files) => {
             if (err) {
             next(err);
             return;
             }
-        console.log(req.body)
+        //console.log(req.body)
         const client = new MongoClient(mongourl);
         client.connect((err) => {
             assert.equal(null,err);
@@ -359,10 +315,17 @@ app.put( '/api/inventory/id/:id', (req,res) => {
     } else {
         res.status(500).json({"error": "missing id"});
     }
+   }else{
+    res.status(500).render('error',{
+        action:"Delete",
+        message: "Only the manager ("+req.params.manager+") can delete this inventory"
+        });  
+    }
    });
-
-app.delete( '/api/inventory/id/:id/manager/:manager', (req,res) => {
-    if(manager == req.session.username){
+//DELETE
+app.post( '/api/inventory/delete/id/:id/manager/:manager', (req,res) => {
+    //console.log(req.params.manager);
+    if(req.params.manager == req.session.username){
         if (req.params.id) {
             let criteria = {};
             criteria['_id'] = ObjectID(req.params.id);
@@ -385,14 +348,14 @@ app.delete( '/api/inventory/id/:id/manager/:manager', (req,res) => {
         } else {
             res.status(500).render('error',{
                 action:"Delete",
-                error: "missing id"
+                message : "missing id"
             });        
         }
     
    }else{
     res.status(500).render('error',{
         action:"Delete",
-        error: "Only the manager ("+req.session.username+") can delete this inventory"
+        message: "Only the manager ("+req.params.manager+") can delete this inventory"
     });  
 }
 });
@@ -400,7 +363,7 @@ app.delete( '/api/inventory/id/:id/manager/:manager', (req,res) => {
 app.get( '/error', (req,res) => {
     res.status(500).render('error',{
         action:"",
-        error: "error occurs"
+        message : "error occurs"
     }); 
    });
 //     case '/find':

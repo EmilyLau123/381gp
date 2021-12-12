@@ -52,15 +52,7 @@
             </div>
             <p>Search inventory name:
                 <label for="bar"><span class="glyphicon glyphicon-search"></span></label><input style="width:100%" type="text" id="search" onkeyup="searchFunction()" placeholder="Search name" name="search"/><br></p>
-                
-                <!-- <div class="input-group" >
-                    <div class="form-outline"  style="float: left;">
-                        <form action='/home' method="post"  style="float: left;" >
-                        <input type="search" name="search" id="search" class="form-control"  style="float: left;"/>
-                        <button type="submit" class="btn btn-primary" style="float: right;">Search</button>
-                        </form>
-                    </div>
-                 -->
+            
         </div>
          
          <form action='/create'>
@@ -70,7 +62,7 @@
             <h4>Inventories</h4>
              <% data.forEach(function(doc){ %>
                          <div class="card">
-                             <a href="/api/inventory/id/<%= doc._id %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a>
+                             <a href="/api/inventory/id/<%= doc._id %>"><%= doc.name %></a>
                              </div> 
                      <% }); %> 
          </div>
