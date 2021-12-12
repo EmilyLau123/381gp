@@ -12,10 +12,29 @@
         <body>  
             <div>
                 <h4>Inventory: <%= name %></h4>
-                <div id="image">
-                    <img/>
+                <div id="image" >
+                    <img height="400px" style="object-fit: contain;"src="<%= image %>"/>
                 </div>
-                
+                Type: <%= type %><br>
+                Quantity: <%= quantity %><br>
+                Manager: <%= manager %><br>
+                <div class="container">
+                    <div class="row">
+                      <div class="col">
+                        <form method="POST" action="/api/inventory/id/<%= id %>?_method=DELETE">
+                            <input type="submit" class="btn btn-danger" value="Delete"/>
+                        </form>
+                      </div>
+                      <div class="col">
+                        <form action="/update/id/<%= id %>">
+                            <input type="submit" class="btn btn-warning" value="Edit"/>
+                        </form>
+                      </div>
+                      <div class="col">
+                        <a href="/home" class="btn btn-primary">Back</a>
+                      </div>
+                    </div>
+                  </div>
         </div>
     </body>  
 </html>  

@@ -6,11 +6,14 @@ const MongoClient = require("mongodb").MongoClient;
 const bodyParser = require('body-parser');
 const assert = require('assert');
 const formidable = require('formidable');
-var ObjectID = require('mongodb').ObjectID;
+var ObjectID = require('mongodb').ObjectId;
+const fs = require('fs');
 
 
 // const router = express.Router();
 
+const mongourl='mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
+dbName = "test";
 
 const app = express();
 
@@ -29,6 +32,11 @@ const users = new Array(
 	{username: 'demo', password: ''}
 );
 
+// 載入 method-override
+const methodOverride = require('method-override') 
+
+// 設定每一筆請求都會先以 methodOverride 進行前置處理
+app.use(methodOverride('_method'))
 // support parsing of application/json type post data
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -38,19 +46,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.set("view engine", "ejs");
 
 const findDocument = (db, criteria, callback) => {
-    if(criteria == ''){
-        var cursor = db.collection('inventories').find();
-    }else{
-        criteria = JSON.stringify(criteria).replaceAll('"','');
-        var cursor = db.collection('inventories').find({name:criteria});
-    }
-    console.log(criteria);
+    // if(criteria == ''){
+        var cursor = db.collection('inventories').find(criteria);
+    // }else{
+    //     criteria = JSON.stringify(criteria).replaceAll('"','');
+    //     var cursor = db.collection('inventories').find({name:criteria});
+    // }
+    // console.log(criteria);
     
-    console.log(`findDocument: ${JSON.stringify(criteria)}`);
+    // console.log(`findDocument: ${JSON.stringify(criteria)}`);
     cursor.toArray((err,docs) => {
         assert.equal(err,null);
-        console.log(`findDocument: ${docs.length}`);
-        console.log(`Document: ${JSON.stringify(docs[0])}`);
+        // console.log(`findDocument: ${docs.length}`);
+        // console.log(`Document: ${JSON.stringify(docs[0])}`);
         callback(docs);
     });
 }
@@ -68,7 +76,7 @@ const createDocument = (db, fields) => {
                 zipcode:fields.zipcode,
                 coord:fields.lanitude+fields.longitude
             },
-            manager: fields.manager
+            manager: fields.user
            
         }
     );
@@ -127,7 +135,7 @@ app.get( '/home', (req,res,callback) => {
                 console.log("Closed DB connection");
                 //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
                 let result = `${JSON.stringify(docs)}`
-                console.log(`${JSON.stringify(docs[0])}`);
+                //console.log(`${JSON.stringify(docs[0])}`);
                 // let html = '';
                 // docs.forEach((doc) => {
                 //     html += '<div class="card">';
@@ -164,10 +172,34 @@ app.get( '/home', (req,res,callback) => {
             */
          
 
-app.get( '/api/inventory/name/:name', (req,res) => {
-    res.status(200).render('detail',{
-        name:req.params.name
-    })
+app.get( '/api/inventory/id/:id', (req,res) => {
+    const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null, err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            var criteria = {};
+            criteria['_id'] = ObjectID(req.params.id);
+            
+            findDocument(db, criteria, (docs) => {
+                client.close();
+                console.log("Closed DB connection");
+                //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
+                let result = `${JSON.stringify(docs)}`
+                //console.log(`${JSON.stringify(docs[0])}`);
+                
+                res.status(200).render('detail',{
+                    id:req.params.id,
+                     name:docs[0].name,
+                     type:docs[0].type,
+                     image:"data:image/jpg;base64, "+docs[0].photo,
+                     quantity:docs[0].quantity,
+                     manager:docs[0].manager
+                     
+                    });
+                });
+            });
+    
    });
 
 app.get( '/create', (req,res) => {
@@ -177,34 +209,166 @@ app.get( '/create', (req,res) => {
 });
 
 app.post( '/api/inventory/create', (req,res) => {
-    const form = formidable({ multiples: true });
-    form.parse(req, (err, fields, files) => {
-        if (err) {
-          next(err);
-          return;
-        }
+        const form = formidable({ multiples: true });
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+            next(err);
+            return;
+            }
+        console.log(req.body)
+        const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null,err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            var criteria = {};
+
+            let insertDoc = {};
+            let json = JSON.parse(JSON.stringify(files));
+            //console.log('json: '+json);
+            Object.keys(fields).forEach((key) => {
+                insertDoc[key] = fields[key];
+                console.log('fields[key]: '+key+' - '+fields[key]);
+            });
+            console.log('files: '+JSON.stringify(files));
+            //console.log('insertDoc: '+JSON.stringify(insertDoc));
+            if (files.photo && files.photo.size > 0) {
+                
+                fs.readFile(files.photo.path, (err,data) => {
+                    assert.equal(err,null);
+                    insertDoc['photo'] = new Buffer.from(data).toString('base64');
+                    //console.log('photo: '+insertDoc['photo']);
+                    db.collection('inventories').insertOne(insertDoc,(err,results) => {
+                        assert.equal(err,null);
+                        client.close()
+                        res.status(200).render('success',{
+                            action:"Create"
+                        });
+                    })
+                });
+            } else {
+                db.collection('inventories').insertOne(insertDoc,(err,results) => {
+                    assert.equal(err,null);
+                    client.close()
+                    res.status(200).render('success',{
+                        action:"Create"
+                    });
+                })
+            }
+        });
+        });
+    
+});
+app.get( '/update/id/:id', (req,res) => {
+    const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null, err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            var criteria = {};
+            criteria['_id'] = ObjectID(req.params.id);
+            
+            findDocument(db, criteria, (docs) => {
+                client.close();
+                console.log("Closed DB connection");
+                res.status(200).render('update',{
+                id:req.params.id,
+                name:docs[0].name,
+                type:docs[0].type,
+                quantity:docs[0].quantity,
+                photo:docs[0].photo,
+                street:docs[0].street,
+                building:docs[0].building,
+                country:docs[0].country,
+                zipcode:docs[0].zipcode,
+                lanitude:docs[0].lanitude,
+                longitude:docs[0].longitude,
+                user:req.session.username
+                });
+            });
+        });
+    
+});
+
+app.put( '/api/inventory/id/:id', (req,res) => {
+    if (req.params.id ) {
+        const form = formidable({ multiples: true });
+        form.parse(req, (err, fields, files) => {
+            if (err) {
+            next(err);
+            return;
+            }
+        console.log(req.body)
+        const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null,err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+
+            var criteria = {};
+            criteria['_id'] = ObjectID(req.params.id);
+
+            let updateDoc = {};
+            let json = JSON.parse(JSON.stringify(files));
+            console.log('json: '+json);
+            Object.keys(fields).forEach((key) => {
+                updateDoc[key] = fields[key];
+                console.log('fields[key]: '+key+' - '+fields[key]);
+            });
+            console.log('updateDoc: '+JSON.stringify(updateDoc));
+            if (files.photo && files.photo.size > 0) {
+                fs.readFile(files.photo.path, (err,data) => {
+                    assert.equal(err,null);
+                    updateDoc['photo'] = new Buffer.from(data).toString('base64');
+                    db.collection('inventories').updateOne(criteria, {$set: updateDoc},(err,results) => {
+                        assert.equal(err,null);
+                        client.close()
+                        res.status(200).render('success',{
+                            action:"Update with photo"
+                        });
+                    })
+                });
+            } else {
+                console.log('criteria: '+JSON.stringify(criteria));
+                db.collection('inventories').updateOne(criteria, {$set: updateDoc},(err,results) => {
+                    assert.equal(err,null);
+                    client.close()
+                    res.status(200).render('success',{
+                        action:"Update"
+                    });
+                })
+            }
+        });
+        });
+    } else {
+        res.status(500).json({"error": "missing id"});
+    }
+   });
+
+app.delete( '/api/inventory/id/:id', (req,res) => {
+    if (req.params.id) {
+        let criteria = {};
+        criteria['_id'] = ObjectID(req.params.id);
         const client = new MongoClient(mongourl);
         client.connect((err) => {
             assert.equal(null, err);
             console.log("Connected successfully to server");
             const db = client.db(dbName);
-            createDocument(db,fields);
-            console.log(fields);
+            console.log(criteria);
+            // deleteDocument(db,req.params.id);
+            db.collection('inventories').deleteOne(criteria,(err,results) => {
+                assert.equal(err,null)
+            client.close()
+            console.log("deleted");
             res.status(200).render('success',{
-                action:"Create"
-            })
-      });
-    });
-});
-
-app.put( '/update', (req,res) => {
-   res.set('Content-Type','text/html');  // send HTTP response header
-   res.status(200).end(login());
-   });
-
-app.delete( '/remove', (req,res) => {
-   res.set('Content-Type','text/html');  // send HTTP response header
-   res.status(200).end(login());
+                action:"Delete"
+            });
+        });
+        });
+    } else {
+        res.status(500).json({"error": "missing inventory id"});       
+    }
+    
    });
 
 app.get( '/error', (req,res) => {

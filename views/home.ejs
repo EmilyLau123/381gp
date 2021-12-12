@@ -70,7 +70,7 @@
             <h4>Inventories</h4>
              <% data.forEach(function(doc){ %>
                          <div class="card">
-                             <a href="/api/inventory/name/<%= doc.name %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a>
+                             <a href="/api/inventory/id/<%= doc._id %>"><%- JSON.stringify(doc.name).replaceAll('"','') %></a>
                              </div> 
                      <% }); %> 
          </div>
