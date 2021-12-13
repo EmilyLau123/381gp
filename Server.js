@@ -24,7 +24,7 @@ const L = require('leaflet')
 // const router = express.Router();
 
 const mongourl='mongodb+srv://emily:emily@cluster0.qqjdp.mongodb.net/test?retryWrites=true&w=majority';
-dbName = "test";
+const dbName = "test";
 
 const app = express();
 
@@ -130,29 +130,61 @@ app.get( '/home', (req,res,callback) => {
                 let result = `${JSON.stringify(docs)}`
                 res.render('home',{name:req.session.username,
                     data:docs
-                    })
-                })
+                    });
+                });
             });
 });
 
-app.get( '/api/inventory/id/:id', (req,res) => {
+app.get( '/api/inventory/name/:name', (req,res) => {
     const client = new MongoClient(mongourl);
         client.connect((err) => {
             assert.equal(null, err);
             console.log("Connected successfully to server");
             const db = client.db(dbName);
             var criteria = {};
-            criteria['_id'] = ObjectID(req.params.id);
+            //criteria['_id'] = ObjectID(req.params.id);
+		criteria['name'] = req.params.name;
             
             findDocument(db, criteria, (docs) => {
+		if(JSON.stringify(docs[0]) != undefined){
+
                 client.close();
                 console.log("Closed DB connection");
                 //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
                 let result = `${JSON.stringify(docs)}`
-                //console.log(`${JSON.stringify(docs[0])}`);
+                console.log('json'+`${JSON.stringify(docs[0])}`);
+                
+                res.status(200).end(JSON.stringify(docs[0]));
+			}else{
+			let emptyJson = {};
+			res.status(500).end(JSON.stringify(emptyJson));
+}
+                });
+            });
+    
+   });
+
+app.get( '/inventory/name/:name', (req,res) => {
+    const client = new MongoClient(mongourl);
+        client.connect((err) => {
+            assert.equal(null, err);
+            console.log("Connected successfully to server");
+            const db = client.db(dbName);
+            var criteria = {};
+            //criteria['_id'] = ObjectID(req.params.id);
+		criteria['name'] = req.params.name;
+            
+            findDocument(db, criteria, (docs) => {
+		if(JSON.stringify(docs[0]) != undefined){
+
+                client.close();
+                console.log("Closed DB connection");
+                //res.status(200).render('list',{ninventories: docs.length, inventories: docs});
+                let result = `${JSON.stringify(docs)}`
+                console.log('json'+`${JSON.stringify(docs[0])}`);
                 
                 res.status(200).render('detail',{
-                    id:req.params.id,
+                    id:docs[0]._id,
                      name:docs[0].name,
                      type:docs[0].type,
                      street:docs[0].street,
@@ -166,11 +198,16 @@ app.get( '/api/inventory/id/:id', (req,res) => {
                      lon:docs[0].longitude,
                      zoom:15
                      
-                    });
+                    		});
+			}else{
+			let emptyJson = {};
+			res.status(500).end(JSON.stringify(emptyJson));
+}
                 });
             });
     
    });
+
 
 app.get( '/create', (req,res) => {
     res.status(200).render('create',{
@@ -242,7 +279,7 @@ app.get( '/update/id/:id', (req,res) => {
                 client.close();
                 console.log("Closed DB connection");
                 res.status(200).render('update',{
-                id:req.params.id,
+                id:docs[0]._id,
                 name:docs[0].name,
                 type:docs[0].type,
                 quantity:docs[0].quantity,
