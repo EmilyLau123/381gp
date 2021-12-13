@@ -45,10 +45,9 @@
                 <form action='/logout' style="float: right;">
                     <input type="submit" class="btn btn-primary" value="Logout"/>
                 </form>
-                <!-- <button onclick=type="button" class="btn btn-primary" style="float: right;">Log out</button> -->
                 <h1>Welcome!<%= name %></h1>
                 <h3>s12303769 Emily Lau</h3>
-                <h3>Kit</h3>
+                <h3>s12358990 Kit Wong</h3>
             </div>
             <p>Search inventory name:
                 <label for="bar"><span class="glyphicon glyphicon-search"></span></label><input style="width:100%" type="text" id="search" onkeyup="searchFunction()" placeholder="Search name" name="search"/><br></p>
@@ -62,7 +61,7 @@
             <h4>Inventories</h4>
              <% data.forEach(function(doc){ %>
                          <div class="card">
-                             <a href="/api/inventory/id/<%= doc._id %>"><%= doc.name %></a>
+                             <a href="/inventory/name/<%= doc.name %>"><%= doc.name %></a>
                              </div> 
                      <% }); %> 
          </div>
